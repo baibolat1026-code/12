@@ -1,0 +1,2 @@
+# 12
+file:///C:/Users/%D3%A8%D1%80%D0%BB%D0%B5%D1%83%D0%BA%D0%BB%D0%B0%D1%81%D1%81/Downloads/Qwen_html_20260916_pwk4q5ifi.html

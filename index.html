@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<title>Температура - Интерактивті ойын</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .container {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 850px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  h1 { text-align: center; color: #4a148c; margin-bottom: 10px; font-size: 2em; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 25px; }
+  .score {
+    background: linear-gradient(90deg, #ff9a56, #ff6a88);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+  }
+  .student-name {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .student-name input {
+    padding: 8px;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    font-size: 1em;
+    width: 250px;
+    margin-left: 10px;
+  }
+  .task {
+    background: #f8f9ff;
+    border-left: 5px solid #667eea;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .task h2 { color: #4a148c; margin-bottom: 15px; }
+  .task p { margin-bottom: 10px; line-height: 1.6; }
+  input[type="number"], input[type="text"], input[type="password"] {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    outline: none;
+    transition: 0.3s;
+  }
+  input:focus { border-color: #667eea; }
+  button {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+  .feedback {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: none;
+  }
+  .correct { background: #d4edda; color: #155724; }
+  .wrong { background: #f8d7da; color: #721c24; }
+  .match-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 15px 0;
+  }
+  .match-col { flex: 1; min-width: 200px; }
+  .match-item {
+    background: #fff;
+    border: 2px solid #667eea;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-align: center;
+  }
+  .match-item:hover { background: #eef; }
+  .match-item.selected { background: #667eea; color: #fff; }
+  .match-item.matched {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    cursor: default;
+  }
+  .match-item.wrong-match {
+    background: #f8d7da;
+    border-color: #dc3545;
+    animation: shake 0.4s;
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+  .formula-box {
+    background: #fff3cd;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #ffc107;
+  }
+  .final-result {
+    text-align: center;
+    font-size: 1.5em;
+    color: #4a148c;
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(90deg, #ffeaa7, #fab1a0);
+    border-radius: 15px;
+    display: none;
+  }
+  .finish-btn {
+    display: block;
+    margin: 20px auto;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    padding: 15px 40px;
+    font-size: 1.2em;
+  }
+  .finish-btn:hover { background: linear-gradient(90deg, #20c997, #28a745); }
+  .finish-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .teacher-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #424242;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border: none;
+  }
+  .teacher-btn:hover { background: #212121; }
+  .teacher-panel {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .teacher-panel.active { display: flex; }
+  .teacher-content {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 950px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .teacher-content h2 {
+    color: #4a148c;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 10px;
+  }
+  .teacher-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  .teacher-content th, .teacher-content td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  .teacher-content th {
+    background: #667eea;
+    color: #fff;
+  }
+  .teacher-content tr:nth-child(even) { background: #f8f9ff; }
+  .close-btn {
+    background: #dc3545;
+    float: right;
+    margin-top: -10px;
+  }
+  .close-btn:hover { background: #c82333; }
+  .stat-card {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 10px;
+    margin: 5px;
+    text-align: center;
+  }
+  .stat-card .num { font-size: 2em; font-weight: bold; }
+  .stat-card .lbl { font-size: 0.9em; opacity: 0.9; }
+  .login-box {
+    text-align: center;
+    padding: 30px;
+  }
+  .login-box input {
+    padding: 12px;
+    font-size: 1.1em;
+    width: 250px;
+    margin: 10px;
+  }
+  .hint {
+    color: #999;
+    font-size: 0.85em;
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .empty-msg {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-style: italic;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+  }
+  .status-finished { background: #d4edda; color: #155724; }
+  .status-inprogress { background: #fff3cd; color: #856404; }
+</style>
+</head>
+<body>
+<div class="container">
+  <button class="teacher-btn" onclick="openTeacherPanel()">👨‍🏫 Мұғалім</button>
+  <h1>🌡️ Температура тақырыбы</h1>
+  <p class="subtitle">8-сынып физика — Интерактивті ойын</p>
+
+  <div class="student-name">
+    👤 Оқушының аты-жөні: <input type="text" id="studentName" placeholder="Атыңызды жазыңыз">
+  </div>
+
+  <div class="score">Ұпай: <span id="score">0</span> / 5</div>
+
+  <!-- 1-ТАПСЫРМА -->
+  <div class="task">
+    <h2>📝 1-тапсырма. Есеп шығару</h2>
+    <p><b>Есеп:</b> Бөлмедегі ауа температурасы термометр бойынша <b>27°C</b>. 
+    Осы температураны Кельвин шкаласы бойынша анықтаңыз.</p>
+    <div class="formula-box">💡 <b>Формула:</b> T (K) = t (°C) + 273</div>
+    <p>Жауабы (К): <input type="number" id="answer1" placeholder="Санды жаз"> </p>
+    <button onclick="checkTask1()">Тексеру</button>
+    <div class="feedback" id="fb1"></div>
+  </div>
+
+  <!-- 2-ТАПСЫРМА -->
+  <div class="task">
+    <h2>🔗 2-тапсырма. Сәйкестендіру</h2>
+    <p>Сол жақтағы ұғымды оң жақтағы дұрыс анықтамамен сәйкестендір. 
+    Алдымен сол жақтан, сосын оң жақтан бас.</p>
+    <div class="match-container">
+      <div class="match-col">
+        <div class="match-item" data-pair="1" data-side="left" onclick="selectMatch(this)">🌡️ Цельсий</div>
+        <div class="match-item" data-pair="2" data-side="left" onclick="selectMatch(this)">🔬 Кельвин</div>
+        <div class="match-item" data-pair="3" data-side="left" onclick="selectMatch(this)">🇺🇸 Фаренгейт</div>
+        <div class="match-item" data-pair="4" data-side="left" onclick="selectMatch(this)">📏 Термометр</div>
+      </div>
+      <div class="match-col">
+        <div class="match-item" data-pair="3" data-side="right" onclick="selectMatch(this)">АҚШ-та қолданылатын шкала</div>
+        <div class="match-item" data-pair="1" data-side="right" onclick="selectMatch(this)">Судың қатуы 0°, қайнауы 100°</div>
+        <div class="match-item" data-pair="4" data-side="right" onclick="selectMatch(this)">Температураны өлшейтін құрал</div>
+        <div class="match-item" data-pair="2" data-side="right" onclick="selectMatch(this)">Абсолюттік шкала, СИ жүйесі</div>
+      </div>
+    </div>
+    <div class="feedback" id="fb2"></div>
+  </div>
+
+  <div class="final-result" id="finalResult"></div>
+
+  <!-- КНОПКА ЗАВЕРШЕНИЯ -->
+  <button class="finish-btn" id="finishBtn" onclick="finishGame()">
+    ✅ Ойынды аяқтау және нәтижені сақтау
+  </button>
+</div>
+
+<!-- МҰҒАЛІМ ПАНЕЛІ -->
+<div class="teacher-panel" id="teacherPanel">
+  <div class="teacher-content">
+    <button class="close-btn" onclick="closeTeacherPanel()">✕ Жабу</button>
+    
+    <!-- Логин -->
+    <div id="loginBox" class="login-box">
+      <h2>🔒 Мұғалім панелі</h2>
+      <p>Панельге кіру үшін парольді енгізіңіз:</p>
+      <input type="password" id="teacherPass" placeholder="Пароль" onkeypress="if(event.key==='Enter')loginTeacher()">
+      <br>
+      <button onclick="loginTeacher()">Кіру</button>
+      <p class="hint" id="loginHint"></p>
+    </div>
+
+    <!-- Статистика -->
+    <div id="statsBox" style="display:none;">
+      <h2>📊 Мұғалім панелі — Статистика</h2>
+      <div style="text-align:center;">
+        <div class="stat-card">
+          <div class="num" id="totalStudents">0</div>
+          <div class="lbl">Оқушылар саны</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="avgScore">0</div>
+          <div class="lbl">Орташа ұпай</div>
+        </div>
+        <div class="stat-card">
+          <div class="num" id="finishedCount">0</div>
+          <div class="lbl">Аяқтағандар</div>
+        </div>
+      </div>
+      <h3 style="margin-top:20px;color:#4a148c;">📋 Оқушылар тізімі</h3>
+      <div id="emptyMsg" class="empty-msg" style="display:none;">
+        📭 Әзірге ешкім ойынды аяқтаған жоқ...
+      </div>
+      <table id="studentsTableWrap">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Аты-жөні</th>
+            <th>1-тапсырма</th>
+            <th>2-тапсырма</th>
+            <th>Ұпай</th>
+            <th>Қателер</th>
+            <th>Уақыт</th>
+            <th>Күйі</th>
+            <th>Күні</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTable"></tbody>
+      </table>
+      <div style="margin-top:20px;text-align:center;">
+        <button onclick="loadStats()" style="background:#17a2b8;">🔄 Жаңарту</button>
+        <button onclick="exportData()" style="background:#28a745;">📥 Экспорт (TXT)</button>
+        <button onclick="clearData()" style="background:#dc3545;">🗑️ Тазалау</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ ОЙЫН ЛОГИКАСЫ ============
+  let score = 0;
+  let task1Done = false;
+  let matchScore = 0;
+  let selectedLeft = null;
+  let task1Attempts = 0;
+  let task2WrongAttempts = 0;
+  let startTime = Date.now();
+  let gameFinished = false; // 🔑 Флаг завершения игры
+
+  function checkTask1() {
+    if (task1Done) return;
+    task1Attempts++;
+    const val = parseInt(document.getElementById('answer1').value);
+    const fb = document.getElementById('fb1');
+    fb.style.display = 'block';
+    if (val === 300) {
+      fb.className = 'feedback correct';
+      fb.innerHTML = '✅ Дұрыс! T = 27 + 273 = <b>300 K</b>';
+      score++;
+      task1Done = true;
+      updateScore();
+    } else {
+      fb.className = 'feedback wrong';
+      fb.innerHTML = '❌ Қате! Қайта есептеп көр. Формуланы қолдан: T = t + 273';
+    }
+  }
+
+  function selectMatch(el) {
+    if (el.classList.contains('matched')) return;
+    const side = el.dataset.side;
+    if (!selectedLeft) {
+      if (side === 'left') {
+        document.querySelectorAll('.match-item[data-side="left"]').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedLeft = el;
+      }
+    } else {
+      if (side === 'right') {
+        const fb = document.getElementById('fb2');
+        if (selectedLeft.dataset.pair === el.dataset.pair) {
+          selectedLeft.classList.remove('selected');
+          selectedLeft.classList.add('matched');
+          el.classList.add('matched');
+          matchScore++;
+          fb.style.display = 'block';
+          fb.className = 'feedback correct';
+          fb.innerHTML = '✅ Дұрыс сәйкестендірілді! (' + matchScore + '/4)';
+          score++;
+          updateScore();
+          selectedLeft = null;
+        } else {
+          task2WrongAttempts++;
+          el.classList.add('wrong-match');
+          fb.style.display = 'block';
+          fb.className = 'feedback wrong';
+          fb.innerHTML = '❌ Сәйкес келмейді! Қайта таңда.';
+          setTimeout(() => {
+            el.classList.remove('wrong-match');
+            fb.style.display = 'none';
+          }, 1000);
+          selectedLeft.classList.remove('selected');
+          selectedLeft = null;
+        }
+      } else {
+        document.querySelectorAll('.match-item[data-side="left"]').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedLeft = el;
+      }
+    }
+  }
+
+  function updateScore() {
+    document.getElementById('score').textContent = score;
+    if (score === 5) {
+      const fr = document.getElementById('finalResult');
+      fr.style.display = 'block';
+      fr.innerHTML = '🎉 Тамаша! Сен барлық тапсырмаларды орындадың! 🏆<br>Төмендегі батырманы басып, нәтижені сақта.';
+    }
+  }
+
+  // ============ ЗАВЕРШЕНИЕ ИГРЫ ============
+  function finishGame() {
+    if (gameFinished) {
+      alert('⚠️ Ойын бұрыннан аяқталған!');
+      return;
+    }
+    const name = document.getElementById('studentName').value.trim();
+    if (!name) {
+      alert('⚠️ Алдымен аты-жөніңізді жазыңыз!');
+      document.getElementById('studentName').focus();
+      return;
+    }
+    gameFinished = true;
+    saveResult();
+    const fr = document.getElementById('finalResult');
+    fr.style.display = 'block';
+    fr.innerHTML = '🎉 Нәтижеңіз сақталды! Ұпайыңыз: <b>' + score + '/5</b> 🏆';
+    document.getElementById('finishBtn').disabled = true;
+    document.getElementById('finishBtn').textContent = '✅ Сақталды!';
+    alert('✅ Нәтижеңіз сәтті сақталды! Мұғалімге рахмет!');
+  }
+
+  // ============ ДЕРЕКТЕРДІ САҚТАУ ============
+  function saveResult() {
+    const name = document.getElementById('studentName').value.trim() || 'Белгісіз';
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    const timeStr = minutes + ' мин ' + seconds + ' сек';
+    const totalAttempts = task1Attempts + task2WrongAttempts;
+    const isFinished = gameFinished;
+
+    const record = {
+      name: name,
+      task1: task1Done ? '✅' : '❌',
+      task2: matchScore + '/4',
+      score: score,
+      wrongAttempts: totalAttempts,
+      time: timeStr,
+      finished: isFinished,
+      date: new Date().toLocaleString('kk-KZ')
+    };
+
+    let records = JSON.parse(localStorage.getItem('physicsTempResults') || '[]');
+    records.push(record);
+    localStorage.setItem('physicsTempResults', JSON.stringify(records));
+    console.log('💾 Нәтиже сақталды:', record);
+  }
+
+  // ============ МҰҒАЛІМ ПАНЕЛІ ============
+  const TEACHER_PASSWORD = 'Kelvin273'; // 🔑 ПАРОЛЬ
+
+  function openTeacherPanel() {
+    document.getElementById('teacherPanel').classList.add('active');
+    // 🔑 Если уже залогинен — сразу обновить статистику
+    if (document.getElementById('statsBox').style.display === 'block') {
+      loadStats();
+    }
+  }
+  function closeTeacherPanel() {
+    document.getElementById('teacherPanel').classList.remove('active');
+  }
+
+  function loginTeacher() {
+    const pass = document.getElementById('teacherPass').value;
+    const hint = document.getElementById('loginHint');
+    if (pass === TEACHER_PASSWORD) {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('statsBox').style.display = 'block';
+      loadStats();
+    } else {
+      hint.textContent = '❌ Қате пароль! Қайта енгізіңіз.';
+      hint.style.color = '#dc3545';
+    }
+  }
+
+  function loadStats() {
+    const records = JSON.parse(localStorage.getItem('physicsTempResults') || '[]');
+    const tbody = document.getElementById('studentsTable');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const tableWrap = document.getElementById('studentsTableWrap');
+    tbody.innerHTML = '';
+    let totalScore = 0;
+    let finishedCount = 0;
+
+    console.log('📊 Жүктелген жазбалар:', records.length);
+
+    if (records.length === 0) {
+      emptyMsg.style.display = 'block';
+      tableWrap.style.display = 'none';
+    } else {
+      emptyMsg.style.display = 'none';
+      tableWrap.style.display = 'table';
+
+      // Показываем в обратном порядке (новые сверху)
+      const reversed = [...records].reverse();
+      reversed.forEach((r, i) => {
+        totalScore += r.score;
+        if (r.finished) finishedCount++;
+        const tr = document.createElement('tr');
+        const statusBadge = r.finished 
+          ? '<span class="status-badge status-finished">✅ Аяқтады</span>'
+          : '<span class="status-badge status-inprogress">⏳ Орындауда</span>';
+        tr.innerHTML = `
+          <td>${records.length - i}</td>
+          <td><b>${r.name}</b></td>
+          <td>${r.task1}</td>
+          <td>${r.task2}</td>
+          <td><b>${r.score}/5</b></td>
+          <td>${r.wrongAttempts}</td>
+          <td>${r.time}</td>
+          <td>${statusBadge}</td>
+          <td><small>${r.date}</small></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('totalStudents').textContent = records.length;
+    document.getElementById('avgScore').textContent = records.length ? (totalScore / records.length).toFixed(1) : '0';
+    document.getElementById('finishedCount').textContent = finishedCount;
+  }
+
+  function exportData() {
+    const records = JSON.parse(localStorage.getItem('physicsTempResults') || '[]');
+    if (records.length === 0) { alert('Деректер жоқ!'); return; }
+    let txt = 'ФИЗИКА 8-СЫНЫП — ТЕМПЕРАТУРА\n';
+    txt += 'Ойын нәтижелері\n';
+    txt += '=========================\n\n';
+    records.forEach((r, i) => {
+      txt += `${i + 1}. ${r.name}\n`;
+      txt += `   1-тапсырма: ${r.task1}\n`;
+      txt += `   2-тапсырма: ${r.task2}\n`;
+      txt += `   Ұпай: ${r.score}/5\n`;
+      txt += `   Қателер: ${r.wrongAttempts}\n`;
+      txt += `   Уақыт: ${r.time}\n`;
+      txt += `   Күйі: ${r.finished ? '✅ Аяқтады' : '⏳ Орындауда'}\n`;
+      txt += `   Күні: ${r.date}\n\n`;
+    });
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'fizika_natijeler.txt';
+    a.click();
+  }
+
+  function clearData() {
+    if (confirm('Барлық деректерді өшіру керек пе?')) {
+      localStorage.removeItem('physicsTempResults');
+      loadStats();
+      alert('✅ Деректер өшірілді!');
+    }
+  }
+</script>
+</body>
+</html>
